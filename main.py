@@ -1,4 +1,4 @@
-from machine import Pin, PWM, freq
+from machine import Pin, PWM
 from time import sleep
 
 U16_MAX = 65535
@@ -10,14 +10,27 @@ class Color:
     def duty_u16(self, duty):
         self.pin.duty_u16(duty)
 
-    def breathe(self):
+    def breathe(self, interval=0.0001):
         for duty in range(0, U16_MAX, 20):
             self.duty_u16(duty)
-            sleep(0.0001)
+            sleep(interval)
 
         for duty in range(U16_MAX, 0, -20):
             self.duty_u16(duty)
-            sleep(0.0001)
+            sleep(interval)
+
+class RGB:
+    """
+    Convert a traditional (8-bit) RGB color to a 16-bit color
+    """
+    def __init__(self, r, g, b):
+        self.r = r * 256
+        self.g = g * 256
+        self.b = b * 256
+
+    def to_u16(self):
+        return self.r, self.g, self.b
+
 
 
 class StripLights:
@@ -36,10 +49,10 @@ class StripLights:
         self.G.duty_u16(0)
         self.B.duty_u16(0)
 
-    def breathe(self):
-        self.R.breathe()
-        self.G.breathe()
-        self.B.breathe()
+    def breathe(self, sleep_interval=0.0001):
+        self.R.breathe(sleep_interval)
+        self.G.breathe(sleep_interval)
+        self.B.breathe(sleep_interval)
 
     def blink(self, sleep_interval=1):
         self.on()
@@ -49,7 +62,9 @@ class StripLights:
         print('off')
         sleep(sleep_interval)
 
-    def set_color(self, r, g, b):
+    def set_color(self, rgb):
+        r, g, b = rgb
+
         if (r < 0 or r > U16_MAX):
             raise "Red value out of accepted range"
 
@@ -63,10 +78,25 @@ class StripLights:
         self.G.duty_u16(g)
         self.B.duty_u16(b)
 
+    def color_cycle(self, color_list, sleep_interval=1):
+        for color in color_list:
+            self.set_color(color)
+            sleep(sleep_interval)
+
+COLORS = {
+    'PURPLE': RGB(255, 0, 255),
+    'RED': RGB(255, 0, 0),
+    'GREEN': RGB(0, 255, 0),
+    'BLUE': RGB(0, 0, 255)
+}
+
 def main():
     lights = StripLights()
 
     while True:
-        lights.blink()
+        lights.color_cycle([color.to_u16() for color in COLORS.values()])
+
+    # while True:
+    #     lights.breathe(0.01)
 
 main()
