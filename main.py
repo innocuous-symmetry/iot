@@ -1,4 +1,5 @@
 from machine import Pin, PWM
+from random import choice
 from time import sleep
 
 U16_MAX = 65535
@@ -30,7 +31,6 @@ class RGB:
 
     def to_u16(self):
         return self.r, self.g, self.b
-
 
 
 class StripLights:
@@ -83,6 +83,15 @@ class StripLights:
             self.set_color(color)
             sleep(sleep_interval)
 
+    def color_random(self, color_list, sleep_interval=1, logging=False):
+        color = choice(color_list)
+        self.set_color(color)
+
+        if logging:
+            print(color)
+
+        sleep(sleep_interval)
+
 COLORS = {
     'PURPLE': RGB(255, 0, 255),
     'RED': RGB(255, 0, 0),
@@ -90,11 +99,13 @@ COLORS = {
     'BLUE': RGB(0, 0, 255)
 }
 
+COLORS_U16 = [color.to_u16() for color in COLORS.values()]
+
 def main():
     lights = StripLights()
 
     while True:
-        lights.color_cycle([color.to_u16() for color in COLORS.values()])
+        lights.color_random(COLORS_U16)
 
     # while True:
     #     lights.breathe(0.01)
