@@ -1,0 +1,61 @@
+esphome:
+  name: rp2040
+  friendly_name: rp2040
+
+rp2040:
+  board: rpipicow
+  framework:
+    # Required until https://github.com/platformio/platform-raspberrypi/pull/36 is merged
+    platform_version: https://github.com/maxgerhardt/platform-raspberrypi.git
+
+# Enable logging
+logger:
+
+output:
+  - platform: rp2040_pwm
+    frequency: 1000
+    pin:
+      number: 10
+      mode: output
+    id: RED
+  - platform: rp2040_pwm
+    frequency: 1000
+    pin:
+      number: 11
+      mode: output
+    id: GREEN
+  - platform: rp2040_pwm
+    frequency: 1000
+    pin:
+      number: 12
+      mode: output
+    id: BLUE
+
+interval:
+  - interval: 750ms
+    then:
+      - output.turn_off: BLUE
+      - output.turn_on: RED
+      - delay: 250ms
+      - output.turn_off: RED
+      - output.turn_on: GREEN
+      - delay: 250ms
+      - output.turn_off: GREEN
+      - output.turn_on: BLUE
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "N4LbUDaX36AgED26i5OhdbawSCNhDm2zIzPisR5+GNE="
+
+ota:
+  password: "1d0d2f2ac0c1f7aaa82274eed08a3560"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot in case wifi connection fails
+  ap:
+    ssid: "Rp2040 Fallback Hotspot"
+    password: "C279zlZnA6E4"
